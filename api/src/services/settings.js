@@ -6,6 +6,7 @@ const resources = require('../resources');
 const { info } = require('@medic/logger');
 const config = require('../config');
 const { DOC_IDS } = require('@medic/constants');
+const contactTypesUtils = require('@medic/contact-types-utils');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
@@ -98,6 +99,8 @@ module.exports = {
         } else {
           doExtend(doc.settings, body);
         }
+
+        contactTypesUtils.validate(doc.settings);
 
         if (doc.settings.permissions) {
           _.defaults(doc.settings.permissions, defaultConfig.permissions);

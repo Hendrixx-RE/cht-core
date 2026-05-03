@@ -572,4 +572,44 @@ describe('ContactType Utils', () => {
       ]);
     });
   });
+
+  describe('validate', () => {
+    it('should not throw for valid hierarchy', () => {
+      chai.expect(() => utils.validate(settings)).to.not.throw();
+    });
+
+    it('should not throw for empty hierarchy', () => {
+      chai.expect(() => utils.validate({})).to.not.throw();
+      chai.expect(() => utils.validate({ contact_types: [] })).to.not.throw();
+    });
+
+    it('should throw when a person type is a parent', () => {
+      const invalidSettings = {
+        contact_types: [
+          { id: 'person_parent', person: true },
+          { id: 'child_place', parents: ['person_parent'] }
+        ]
+      };
+      chai.expect(() => utils.validate(invalidSettings)).to.throw('Contact type "child_place" cannot have person type "person_parent" as a parent. Persons must be leaf nodes in the hierarchy.');
+    });
+
+    it('should throw when hardcoded person type is a parent', () => {
+      const invalidSettings = {
+        contact_types: [
+          { id: 'child_place', parents: ['person'] }
+        ]
+      };
+      chai.expect(() => utils.validate(invalidSettings)).to.throw('Contact type "child_place" cannot have person type "person" as a parent. Persons must be leaf nodes in the hierarchy.');
+    });
+
+    it('should throw when a person type is a parent of another person type', () => {
+      const invalidSettings = {
+        contact_types: [
+          { id: 'person_parent', person: true },
+          { id: 'person_child', person: true, parents: ['person_parent'] }
+        ]
+      };
+      chai.expect(() => utils.validate(invalidSettings)).to.throw('Contact type "person_child" cannot have person type "person_parent" as a parent. Persons must be leaf nodes in the hierarchy.');
+    });
+  });
 });

@@ -98,6 +98,28 @@ const getChildren = (config, parentType) => {
 const getPlaceTypes = (config) => getContactTypes(config).filter(isPlaceType);
 const getPersonTypes = (config) => getContactTypes(config).filter(isPersonType);
 
+const validate = (config) => {
+  const types = getContactTypes(config);
+  if (!types.length) {
+    return;
+  }
+
+  const personTypeIds = types.filter(isPersonType).map(type => type.id);
+  if (personTypeIds.indexOf(HARDCODED_PERSON_TYPE) === -1) {
+    personTypeIds.push(HARDCODED_PERSON_TYPE);
+  }
+
+  types.forEach(type => {
+    if (type.parents) {
+      type.parents.forEach(parentId => {
+        if (personTypeIds.includes(parentId)) {
+          throw new Error(`Contact type "${type.id}" cannot have person type "${parentId}" as a parent. Persons must be leaf nodes in the hierarchy.`);
+        }
+      });
+    }
+  });
+};
+
 module.exports = {
   getTypeId,
   getTypeById,
@@ -118,4 +140,5 @@ module.exports = {
   getChildren,
   getPlaceTypes,
   getPersonTypes,
+  validate,
 };
